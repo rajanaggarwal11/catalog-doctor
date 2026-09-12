@@ -1,5 +1,20 @@
 # catalog-doctor
 
+## 0.1.1
+
+**Fixes `npx catalog-doctor` doing nothing.**
+
+0.1.0 shipped a self-execute guard that compared `import.meta.url` against a raw
+`process.argv[1]`. npm installs a bin as a symlink —
+`node_modules/.bin/catalog-doctor -> ../catalog-doctor/dist/cli.js` — so the two
+paths never matched, `run()` was never called, and the CLI exited 0 having parsed
+nothing and printed nothing.
+
+It was invisible in testing because every test invoked the CLI by its real path,
+where the comparison holds. Both sides are now resolved through `realpath`, and
+there is a test that executes the built binary through a symlink, which is the
+only arrangement that reproduces it.
+
 ## 0.1.0
 
 First release.

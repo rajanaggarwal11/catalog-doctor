@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { readFileSync } from "node:fs";
+import { readFileSync, realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import pc from "picocolors";
 import { diagnose } from "./index.js";
@@ -182,8 +183,28 @@ export async function run(argv: string[] = process.argv.slice(2)): Promise<numbe
   }
 }
 
+/**
+ * Whether this module is the program being run, as opposed to being imported.
+ *
+ * Both sides are resolved through realpath because npm installs a bin as a
+ * SYMLINK — `node_modules/.bin/catalog-doctor -> ../catalog-doctor/dist/cli.js`.
+ * Comparing `import.meta.url` against a raw `process.argv[1]` therefore compares
+ * the real file against the link and never matches, so the CLI exits 0 having
+ * done nothing. That is invisible when testing with `node dist/cli.js`, where the
+ * two paths are identical, and total when installed.
+ */
+function isMainModule(): boolean {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  try {
+    return realpathSync(entry) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
 // Only self-execute as a binary; importing this module in a test must not exit.
-if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
+if (isMainModule()) {
   run().then(
     (code) => process.exit(code),
     (error: unknown) => {

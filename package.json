@@ -1,6 +1,6 @@
 {
   "name": "catalog-doctor",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Health check for pnpm workspaces. Finds dependency drift, phantom imports and broken catalog entries before they bite.",
   "keywords": [
     "pnpm",
@@ -51,7 +51,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm selfcheck",
+    "check": "pnpm lint && pnpm typecheck && pnpm build && pnpm test && pnpm selfcheck",
     "attw": "attw --pack . --ignore-rules no-resolution cjs-resolves-to-esm",
     "publint": "publint",
     "release": "pnpm build && changeset publish",
