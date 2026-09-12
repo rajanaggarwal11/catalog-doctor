@@ -31,8 +31,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm test
+      # Build before test: test/binary.test.ts runs the built binary through a
+      # symlink, which is the only way to catch the bin-resolution bug in 0.1.0.
       - run: pnpm build
+      - run: pnpm test
       # The tool has to pass its own check, excluding the fixtures that are
       # deliberately broken workspaces.
       - run: pnpm selfcheck

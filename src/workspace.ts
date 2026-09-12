@@ -79,7 +79,9 @@ async function readManifest(
     manifest = JSON.parse(raw) as Manifest;
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
-    throw new Error(`${toPosix(relative(root, manifestPath))} is not valid JSON: ${reason}`);
+    throw new Error(`${toPosix(relative(root, manifestPath))} is not valid JSON: ${reason}`, {
+      cause: error,
+    });
   }
 
   const dir = dirname(manifestPath);
