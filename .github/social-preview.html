@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=JetBrains+Mono:wght@400;700&display=swap"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1280px;
+        height: 640px;
+      }
+      body {
+        background: #f4f7f5;
+        font-family: "Archivo", system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0 76px;
+        position: relative;
+        overflow: hidden;
+      }
+      /* A single accent rule, tying the card to the CLI's one accent colour. */
+      body::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 14px;
+        background: #0d6b5c;
+      }
+      .word {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        font-size: 66px;
+        letter-spacing: -0.035em;
+        color: #10201c;
+        line-height: 1;
+      }
+      .tag {
+        font-size: 27px;
+        font-weight: 600;
+        color: #3c4a46;
+        margin-top: 18px;
+        letter-spacing: -0.015em;
+        max-width: 830px;
+        line-height: 1.32;
+      }
+      .term {
+        margin-top: 36px;
+        background: #10201c;
+        border-radius: 9px;
+        padding: 24px 30px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 19px;
+        line-height: 1.72;
+        color: #b9c9c4;
+        max-width: 1010px;
+      }
+      .err {
+        color: #ff8a80;
+      }
+      .warn {
+        color: #f2c377;
+      }
+      .ok {
+        color: #5fd3b8;
+      }
+      .dim {
+        color: #6d817c;
+      }
+      .foot {
+        margin-top: 30px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 19px;
+        color: #5d6b67;
+        letter-spacing: 0.02em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="word">catalog-doctor</div>
+    <div class="tag">
+      Health check for pnpm workspaces — find the dependency drift before it bites.
+    </div>
+
+    <div class="term">
+      <div><span class="ok">$</span> npx catalog-doctor</div>
+      <div>
+        <span class="err">✗</span> zod resolves through the catalog in 1 place and directly in 1
+      </div>
+      <div><span class="err">✗</span> lodash is declared at 2 different versions</div>
+      <div><span class="warn">!</span> date-fns is in 3 packages but not in the catalog</div>
+      <div class="dim">7 findings · 5 fixable — run catalog-doctor --fix</div>
+    </div>
+
+    <div class="foot">github.com/rajanaggarwal11/catalog-doctor</div>
+  </body>
+</html>

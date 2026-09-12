@@ -58,3 +58,16 @@ pnpm changeset
 ```
 
 Merging to `main` opens a release PR; merging that publishes to npm with provenance.
+
+## Regenerating the social preview
+
+`.github/social-preview.html` is the source for the repository's link-preview card.
+GitHub only accepts it through Settings → General → Social preview, so it is rendered
+by hand and uploaded:
+
+```bash
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  --headless --disable-gpu --hide-scrollbars --window-size=1280,640 \
+  --screenshot=social-preview.png \
+  "file://$PWD/.github/social-preview.html"
+```
