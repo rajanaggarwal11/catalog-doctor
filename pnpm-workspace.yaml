@@ -1,0 +1,4 @@
+# catalog-doctor is a single package, so there are no `packages:` globs here.
+# pnpm 11 reads workspace settings from this file, which is why it exists at all.
+allowBuilds:
+  esbuild: true

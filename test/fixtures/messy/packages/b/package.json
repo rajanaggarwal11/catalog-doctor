@@ -1,0 +1,13 @@
+{
+  "name": "@messy/b",
+  "version": "1.0.0",
+  "dependencies": {
+    "date-fns": "^3.6.0",
+    "lodash": "^4.17.20",
+    "missing-thing": "catalog:nope",
+    "zod": "^3.22.0"
+  },
+  "peerDependencies": {
+    "lodash": "*"
+  }
+}

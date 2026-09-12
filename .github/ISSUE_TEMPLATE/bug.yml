@@ -1,0 +1,37 @@
+name: Bug report
+description: A rule is wrong, a fix broke something, or the CLI misbehaved
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you ran, and what it reported or changed.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+  - type: textarea
+    id: workspace
+    attributes:
+      label: The relevant part of your workspace
+      description: >
+        The `pnpm-workspace.yaml` catalogs and the dependency blocks involved.
+        A trimmed-down version that still reproduces it is ideal.
+      render: yaml
+  - type: input
+    id: version
+    attributes:
+      label: catalog-doctor version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node and pnpm versions
+      placeholder: "node 22.11.0, pnpm 10.4.1"

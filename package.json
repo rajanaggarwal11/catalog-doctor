@@ -1,0 +1,81 @@
+{
+  "name": "catalog-doctor",
+  "version": "0.1.0",
+  "description": "Health check for pnpm workspaces. Finds dependency drift, phantom imports and broken catalog entries before they bite.",
+  "keywords": [
+    "pnpm",
+    "pnpm-workspace",
+    "catalog",
+    "monorepo",
+    "workspace",
+    "dependencies",
+    "lint",
+    "cli",
+    "turborepo"
+  ],
+  "license": "MIT",
+  "author": "Rajan Aggarwal",
+  "homepage": "https://github.com/rajanaggarwal11/catalog-doctor#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rajanaggarwal11/catalog-doctor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rajanaggarwal11/catalog-doctor/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20.11"
+  },
+  "bin": {
+    "catalog-doctor": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm selfcheck",
+    "attw": "attw --pack . --ignore-rules no-resolution cjs-resolves-to-esm",
+    "publint": "publint",
+    "release": "pnpm build && changeset publish",
+    "prepublishOnly": "pnpm build",
+    "selfcheck": "node dist/cli.js --exclude \"test/**\" --strict"
+  },
+  "dependencies": {
+    "picocolors": "^1.1.1",
+    "tinyglobby": "^0.2.10",
+    "yaml": "^2.6.1"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@changesets/changelog-github": "^1.0.1",
+    "@changesets/cli": "^2.27.10",
+    "@eslint/js": "^9.17.0",
+    "@types/node": "^22.10.2",
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2",
+    "publint": "^0.2.12",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.1",
+    "vitest": "^2.1.8"
+  },
+  "packageManager": "pnpm@11.22.0"
+}

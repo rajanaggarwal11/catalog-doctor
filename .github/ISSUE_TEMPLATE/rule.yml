@@ -1,0 +1,27 @@
+name: Rule proposal
+description: Something a pnpm workspace gets wrong that this could catch
+labels: [rule]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What goes wrong
+      description: The failure, not the check. What breaks, and when does someone notice?
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: A workspace that has the problem
+      render: yaml
+    validations:
+      required: true
+  - type: dropdown
+    id: fixable
+    attributes:
+      label: Is there exactly one correct fix?
+      options:
+        - "Yes — it can be rewritten automatically"
+        - "No — resolving it means choosing between valid options"
+    validations:
+      required: true

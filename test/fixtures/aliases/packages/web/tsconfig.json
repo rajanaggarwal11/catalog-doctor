@@ -1,0 +1,9 @@
+{
+  // A path alias, plus a comment, plus a trailing comma — all legal in a tsconfig.
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "~utils/*": ["./src/utils/*"],
+    },
+  },
+}

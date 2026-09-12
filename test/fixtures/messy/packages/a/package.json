@@ -1,0 +1,10 @@
+{
+  "name": "@messy/a",
+  "version": "1.0.0",
+  "dependencies": {
+    "@messy/b": "^1.0.0",
+    "date-fns": "^3.6.0",
+    "lodash": "^4.17.21",
+    "zod": "catalog:"
+  }
+}
