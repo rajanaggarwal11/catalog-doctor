@@ -25,7 +25,7 @@
   },
   "type": "module",
   "engines": {
-    "node": ">=20.11"
+    "node": ">=22.13"
   },
   "bin": {
     "catalog-doctor": "./dist/cli.js"

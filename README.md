@@ -159,7 +159,7 @@ await applyFixes(workspace, findings, { dryRun: true });
 
 ## Requirements
 
-Node 20.11 or newer. pnpm workspaces only — `catalog:` is a pnpm feature.
+Node 22.13 or newer — Node 20 reached end-of-life in April 2026. pnpm workspaces only, since `catalog:` is a pnpm feature.
 
 The package is **ESM-only**. As a CLI that makes no difference; as a library it means `import`, not `require`.
 
