@@ -19,7 +19,7 @@ jobs:
       # verifiable link back to the commit and workflow that built it.
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: pnpm/action-setup@v4
