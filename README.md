@@ -167,6 +167,10 @@ The package is **ESM-only**. As a CLI that makes no difference; as a library it 
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md). Every rule is one file in `src/rules/` with one fixture workspace in `test/fixtures/`, so a new rule is a small, self-contained pull request.
 
+## Working with me
+
+**Monorepo in a state?** I untangle pnpm workspaces — dependency drift, phantom imports, CI that lies — and leave the rules that keep it that way. Sponsor the project, or write to me: [aggarwal11.rajan05@gmail.com](mailto:aggarwal11.rajan05@gmail.com).
+
 ## License
 
 [MIT](./LICENSE) © Rajan Aggarwal
