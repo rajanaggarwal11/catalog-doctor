@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import { applyFixes, diagnose, loadWorkspace } from "../src/index.js";
+import type { Finding } from "../src/index.js";
 
 const fixture = (name: string) => fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url));
 
@@ -125,5 +126,71 @@ describe("--fix", () => {
 
     expect(result.changedFiles).toEqual([]);
     expect(await readFile(join(dir, "pnpm-workspace.yaml"), "utf8")).toBe(afterFirst);
+  });
+
+  it("refuses edits keyed __proto__, constructor or prototype, and leaves the prototype alone", async () => {
+    const dir = await scratch("messy");
+    const { workspace } = await diagnose({ cwd: dir });
+    const file = "packages/a/package.json";
+    const before = await readFile(join(dir, file), "utf8");
+    const yamlBefore = await readFile(join(dir, "pnpm-workspace.yaml"), "utf8");
+
+    const finding = (dep: string, catalog = "default"): Finding => ({
+      rule: "catalog-drift",
+      severity: "error",
+      dep,
+      message: `malicious ${dep}`,
+      sites: [{ file, depType: "dependencies" }],
+      fixable: true,
+      fix: {
+        manifests: [{ file, depType: "dependencies", dep, spec: "catalog:" }],
+        catalogs: [{ catalog, dep, spec: "1.0.0" }],
+      },
+    });
+    const malicious = [
+      finding("__proto__"),
+      finding("constructor"),
+      finding("prototype"),
+      finding("polluted", "__proto__"),
+    ];
+
+    const result = await applyFixes(workspace, malicious);
+
+    expect(result.applied).toEqual([]);
+    expect(result.skipped.map((s) => s.finding.dep)).toEqual([
+      "__proto__",
+      "constructor",
+      "prototype",
+      "polluted",
+    ]);
+    expect(result.changedFiles).toEqual([]);
+    expect(await readFile(join(dir, file), "utf8")).toBe(before);
+    expect(await readFile(join(dir, "pnpm-workspace.yaml"), "utf8")).toBe(yamlBefore);
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    expect(Object.getPrototypeOf({})).toBe(Object.prototype);
+  });
+
+  it("never adds a dependency the manifest does not have, even one named like an Object method", async () => {
+    const dir = await scratch("messy");
+    const { workspace } = await diagnose({ cwd: dir });
+    const file = "packages/a/package.json";
+    const before = await readFile(join(dir, file), "utf8");
+
+    const result = await applyFixes(workspace, [
+      {
+        rule: "unpinned-workspace-dep",
+        severity: "error",
+        dep: "toString",
+        message: "toString",
+        sites: [{ file, depType: "dependencies" }],
+        fixable: true,
+        fix: {
+          manifests: [{ file, depType: "dependencies", dep: "toString", spec: "workspace:*" }],
+        },
+      },
+    ]);
+
+    expect(result.changedFiles).toEqual([]);
+    expect(await readFile(join(dir, file), "utf8")).toBe(before);
   });
 });
