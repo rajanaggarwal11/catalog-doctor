@@ -1,4 +1,4 @@
-import { cp, mkdtemp, readFile, rm } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -128,7 +128,7 @@ describe("--fix", () => {
     expect(await readFile(join(dir, "pnpm-workspace.yaml"), "utf8")).toBe(afterFirst);
   });
 
-  it("refuses edits keyed __proto__, constructor or prototype, and leaves the prototype alone", async () => {
+  it("refuses edits keyed __proto__, reports them, and leaves the prototype alone", async () => {
     const dir = await scratch("messy");
     const { workspace } = await diagnose({ cwd: dir });
     const file = "packages/a/package.json";
@@ -147,27 +147,54 @@ describe("--fix", () => {
         catalogs: [{ catalog, dep, spec: "1.0.0" }],
       },
     });
-    const malicious = [
-      finding("__proto__"),
-      finding("constructor"),
-      finding("prototype"),
-      finding("polluted", "__proto__"),
-    ];
 
-    const result = await applyFixes(workspace, malicious);
+    const result = await applyFixes(workspace, [
+      finding("__proto__"),
+      finding("polluted", "__proto__"),
+    ]);
 
     expect(result.applied).toEqual([]);
-    expect(result.skipped.map((s) => s.finding.dep)).toEqual([
-      "__proto__",
-      "constructor",
-      "prototype",
-      "polluted",
+    expect(result.skipped.map((s) => [s.finding.dep, s.reason])).toEqual([
+      ["__proto__", "the dependency or catalog name is __proto__"],
+      ["polluted", "the dependency or catalog name is __proto__"],
     ]);
     expect(result.changedFiles).toEqual([]);
     expect(await readFile(join(dir, file), "utf8")).toBe(before);
     expect(await readFile(join(dir, "pnpm-workspace.yaml"), "utf8")).toBe(yamlBefore);
     expect(({} as Record<string, unknown>).polluted).toBeUndefined();
     expect(Object.getPrototypeOf({})).toBe(Object.prototype);
+  });
+
+  it("fixes drift on real packages named constructor and prototype", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "catalog-doctor-"));
+    temps.push(dir);
+    await writeFile(
+      join(dir, "pnpm-workspace.yaml"),
+      'packages:\n  - "packages/*"\n\ncatalog:\n  constructor: ^1.0.0\n  prototype: ^2.0.0\n',
+    );
+    const manifest = (name: string, spec: { constructor: string; prototype: string }) =>
+      `${JSON.stringify({ name, version: "1.0.0", dependencies: spec }, null, 2)}\n`;
+    for (const [pkg, spec] of [
+      ["a", { constructor: "catalog:", prototype: "catalog:" }],
+      ["b", { constructor: "^1.0.0", prototype: "^2.0.0" }],
+    ] as const) {
+      await mkdir(join(dir, "packages", pkg), { recursive: true });
+      await writeFile(join(dir, "packages", pkg, "package.json"), manifest(`@x/${pkg}`, spec));
+    }
+
+    const { workspace, findings } = await diagnose({ cwd: dir });
+    const drift = findings.filter((f) => f.rule === "catalog-drift").map((f) => f.dep);
+    expect(drift.sort()).toEqual(["constructor", "prototype"]);
+
+    const result = await applyFixes(workspace, findings);
+    expect(result.skipped).toEqual([]);
+    const b = JSON.parse(await readFile(join(dir, "packages/b/package.json"), "utf8")) as {
+      dependencies: Record<string, string>;
+    };
+    expect(Object.entries(b.dependencies)).toEqual([
+      ["constructor", "catalog:"],
+      ["prototype", "catalog:"],
+    ]);
   });
 
   it("never adds a dependency the manifest does not have, even one named like an Object method", async () => {
@@ -192,5 +219,34 @@ describe("--fix", () => {
 
     expect(result.changedFiles).toEqual([]);
     expect(await readFile(join(dir, file), "utf8")).toBe(before);
+  });
+});
+
+describe("catalog names from pnpm-workspace.yaml", () => {
+  it("keeps a catalog named __proto__ as a catalog, not the prototype of the catalog map", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "catalog-doctor-"));
+    temps.push(dir);
+    await writeFile(
+      join(dir, "pnpm-workspace.yaml"),
+      'packages:\n  - "packages/*"\n\ncatalogs:\n  __proto__:\n    zod: ^3.23.8\n  react17:\n    react: ^17.0.2\n',
+    );
+    await mkdir(join(dir, "packages", "a"), { recursive: true });
+    await writeFile(
+      join(dir, "packages", "a", "package.json"),
+      JSON.stringify({
+        name: "@x/a",
+        dependencies: { zod: "catalog:__proto__", react: "catalog:react17", x: "catalog:toString" },
+      }),
+    );
+
+    const workspace = await loadWorkspace(dir);
+    expect(Object.keys(workspace.catalogs).sort()).toEqual(["__proto__", "react17"]);
+    expect(Object.getPrototypeOf(workspace.catalogs)).toBeNull();
+    expect(workspace.catalogs["__proto__"]?.zod).toBe("^3.23.8");
+
+    // catalog:__proto__ resolves; catalog:toString is not inherited from Object.
+    const { findings } = await diagnose({ workspace });
+    const missing = findings.filter((f) => f.rule === "missing-catalog-entry");
+    expect(missing.map((f) => f.dep)).toEqual(["x"]);
   });
 });

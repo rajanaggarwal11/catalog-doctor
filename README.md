@@ -63,7 +63,7 @@ catalog-doctor · acme · 2 packages · 2 catalogs
 5 fixable — run catalog-doctor --fix
 ```
 
-That is the exact output for a two-package workspace (`acme`, with `@acme/web` and `@acme/api`). One `unused-catalog-entry` finding lists two entries; each counts on its own, so 4 errors and 3 warnings, of which 5 can be fixed.
+That is the exact output for a two-package workspace (`acme`, with `@acme/web` and `@acme/api`). The `unused-catalog-entry` rule reports two findings, one per unused entry, so the total is 4 errors and 3 warnings, of which 5 can be fixed.
 
 ## The rules
 

@@ -50,14 +50,19 @@ interface WorkspaceYaml {
  * winning — which is what pnpm itself does.
  */
 function readCatalogs(doc: WorkspaceYaml): Catalogs {
-  const catalogs: Catalogs = {};
+  // Null-prototype maps: catalog and dependency names come from the YAML, so a
+  // catalog called `__proto__` must stay a catalog instead of becoming this
+  // object's prototype, and `catalog:constructor` must not resolve to Object.
+  const catalogs: Catalogs = Object.create(null) as Catalogs;
+  const entriesOf = (...sources: (Record<string, string> | undefined)[]) =>
+    Object.assign(Object.create(null) as Record<string, string>, ...sources);
   if (doc.catalog && typeof doc.catalog === "object") {
-    catalogs.default = { ...doc.catalog };
+    catalogs.default = entriesOf(doc.catalog);
   }
   if (doc.catalogs && typeof doc.catalogs === "object") {
     for (const [name, entries] of Object.entries(doc.catalogs)) {
       if (!entries || typeof entries !== "object") continue;
-      catalogs[name] = { ...catalogs[name], ...entries };
+      catalogs[name] = entriesOf(catalogs[name], entries);
     }
   }
   return catalogs;
