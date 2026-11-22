@@ -1,6 +1,6 @@
 # catalog-doctor
 
-**Health check for pnpm workspaces.** Finds the dependency drift a monorepo accumulates quietly — half-adopted catalogs, two versions of the same library, internal packages that can resolve to the registry, imports nothing declares — and fixes the ones that have only one correct answer.
+**Find and fix pnpm catalog drift:** half-adopted catalogs, duplicate versions, workspace deps that can resolve to the registry, and undeclared imports. It fixes the problems that have only one correct answer and reports the rest.
 
 [![CI](https://github.com/rajanaggarwal11/catalog-doctor/actions/workflows/ci.yml/badge.svg)](https://github.com/rajanaggarwal11/catalog-doctor/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/catalog-doctor.svg)](https://www.npmjs.com/package/catalog-doctor)
@@ -14,9 +14,7 @@ No config, no install, no setup. It finds `pnpm-workspace.yaml` by walking up fr
 
 ## Why
 
-pnpm catalogs are the right answer to version drift, and they work — right up until adoption is partial. Then you have the worst of both worlds: the catalog _looks_ like the source of truth, while two packages quietly resolve a different copy of the same library. That is the bug that reproduces in one app and not the other, and it does not show up in `pnpm install`, in your typechecker, or in your tests.
-
-Nothing here is exotic. It is all the stuff you'd catch in review if review caught everything.
+pnpm catalogs fix version drift as long as every package uses them. Once adoption is partial, the catalog looks like the source of truth while two packages resolve different copies of the same library. That is the bug that reproduces in one app and not the other, and it does not show up in `pnpm install`, in your typechecker, or in your tests.
 
 ## What it finds
 
@@ -38,8 +36,8 @@ catalog-doctor · acme · 2 packages · 2 catalogs
   ✗ lodash is declared at 2 different versions
       ^4.17.20 — @acme/api
       ^4.17.21 — @acme/web
-      packages/web/package.json · dependencies
       packages/api/package.json · dependencies
+      packages/web/package.json · dependencies
 
  error  catalog-drift
   ✗ zod resolves through the catalog in 1 place and directly in 1
@@ -51,17 +49,21 @@ catalog-doctor · acme · 2 packages · 2 catalogs
  warn  catalog-candidate
   ! date-fns is declared as ^3.6.0 in 2 packages but is not in the catalog
       add `date-fns: ^3.6.0` to the catalog and replace each spec with `catalog:`
-      packages/web/package.json · dependencies
       packages/api/package.json · dependencies
+      packages/web/package.json · dependencies
 
  warn  unused-catalog-entry
   ! left-pad (^1.3.0) sits in the default catalog but no package references it
+      pnpm-workspace.yaml
+  ! react (^17.0.2) sits in catalog react17 but no package references it
       pnpm-workspace.yaml
 
 ────────────────────────────────────────────────
 7 findings: 4 errors, 3 warnings
 5 fixable — run catalog-doctor --fix
 ```
+
+That is the exact output for a two-package workspace (`acme`, with `@acme/web` and `@acme/api`). The `unused-catalog-entry` rule reports two findings, one per unused entry, so the total is 4 errors and 3 warnings, of which 5 can be fixed.
 
 ## The rules
 
@@ -150,6 +152,17 @@ await applyFixes(workspace, findings, { dryRun: true });
 
 `Finding`, `Rule`, `Workspace` and the rest are exported as types. A custom rule is an object with a `check(workspace, context)` method; pass `rules` to `diagnose` to use your own set.
 
+## How is this different from syncpack, sherif, manypkg or knip?
+
+They overlap, and in a big monorepo you may want more than one.
+
+- **[syncpack](https://syncpack.dev)** finds and fixes version mismatches across packages, and it handles pnpm catalogs: a version group with `"policy": "catalog"` reports dependencies that use a literal version instead of `catalog:` and rewrites them, and it can update catalog entries. Another version-group rule can require `workspace:*` for local packages. It is far more configurable than catalog-doctor. It reads `package.json` files, not source.
+- **[sherif](https://github.com/QuiiBz/sherif)** is a zero-config linter with an autofix. Its `multiple-dependency-versions` rule overlaps with `version-mismatch`; its other rules cover root `package.json` hygiene, dependency ordering and `@types` placement. Its README lists no catalog or `workspace:` rule.
+- **[manypkg](https://github.com/Thinkmill/manypkg)** checks external and internal version mismatches (including that an internal range matches the local version) and can require the `workspace:` protocol. Its README does not mention catalogs.
+- **[knip](https://knip.dev)** finds unused files, exports and dependencies, and unlisted dependencies, which covers what `phantom-dependency` does with a real module graph. It also reports unused pnpm catalog entries and unresolved catalog references. It does not compare versions across packages.
+
+catalog-doctor is narrower: pnpm only, built around catalogs, and with no configuration. Every rule overlaps with at least one tool above; syncpack, configured with catalog and `workspace:*` version groups, covers most of them. What catalog-doctor adds is that set of checks with no config: `catalog-drift` (a dependency that goes through the catalog in some packages and a literal range in others), `catalog-candidate` (the same version in several packages with no catalog entry), `unpinned-workspace-dep`, `version-mismatch`, and a lexical `phantom-dependency` scan, in one run.
+
 ## What it deliberately does not do
 
 - **It does not read your lockfile.** Everything here is a statement about what your manifests _say_, which is what you edit and review. Resolution is pnpm's job.
@@ -169,7 +182,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md). Every rule is one file in `src/rules/`
 
 ## Working with me
 
-**Monorepo in a state?** I untangle pnpm workspaces — dependency drift, phantom imports, CI that lies — and leave the rules that keep it that way. Sponsor the project, or write to me: [aggarwal11.rajan05@gmail.com](mailto:aggarwal11.rajan05@gmail.com).
+**Monorepo in a state?** I untangle pnpm workspaces — dependency drift, phantom imports, CI that lies — and leave the rules that keep it that way. Write to me: [aggarwal11.rajan05@gmail.com](mailto:aggarwal11.rajan05@gmail.com).
 
 ## License
 
