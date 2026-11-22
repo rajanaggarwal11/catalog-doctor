@@ -1,5 +1,13 @@
 # catalog-doctor
 
+## 0.1.2
+
+### Patch Changes
+
+- [#14](https://github.com/rajanaggarwal11/catalog-doctor/pull/14) [`9a3c64d`](https://github.com/rajanaggarwal11/catalog-doctor/commit/9a3c64d7891dc7ac20e127b38b66d727ef947b75) Thanks [@rajanaggarwal11](https://github.com/rajanaggarwal11)! - `--fix` refuses edits for a dependency or catalog named `__proto__`, and reports those findings as skipped. It also only rewrites a dependency the manifest really declares, so an edit can no longer add an entry for a name such as `toString` that the manifest object only inherits. Real packages named `constructor` or `prototype` are fixed as usual.
+
+  A catalog named `__proto__` in `pnpm-workspace.yaml` is now read as a catalog. Before, it became the prototype of the catalog map and disappeared. Catalog and dependency lookups no longer resolve inherited names, so `catalog:toString` is now reported as a missing catalog instead of passing.
+
 ## 0.1.1
 
 **Fixes `npx catalog-doctor` doing nothing.**
