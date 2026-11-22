@@ -1,7 +1,7 @@
 {
   "name": "catalog-doctor",
   "version": "0.1.1",
-  "description": "Health check for pnpm workspaces. Finds dependency drift, phantom imports and broken catalog entries before they bite.",
+  "description": "Find and fix pnpm catalog drift: half-adopted catalogs, duplicate versions, workspace deps that can resolve to the registry, and undeclared imports.",
   "keywords": [
     "pnpm",
     "pnpm-workspace",

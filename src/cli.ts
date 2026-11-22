@@ -25,7 +25,7 @@ function version(): string {
 }
 
 const HELP = `
-${pc.bold("catalog-doctor")} — health check for pnpm workspaces
+${pc.bold("catalog-doctor")} — find and fix pnpm catalog drift
 
 ${pc.bold("Usage")}
   catalog-doctor [options]
